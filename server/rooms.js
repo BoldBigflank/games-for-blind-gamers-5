@@ -33,13 +33,13 @@ export const initRooms = (wss) => {
                 if (type === 'subscribe') {
                     console.log(`${userId} -> subscribe -> ${data.channel}`);
                     subscribe(socket, data.channel);
-                    if (data.channel.startsWith('user:')) {
-                        socket.userId = data.channel.split(':')[1];
-                    }
                     if (data.channel.startsWith('room:')) {
                         const roomId = data.channel.split(':')[1];
                         // Remove the user from any other room channels
                         Object.keys(subscribers).forEach(channel => {
+                            if (channel === data.channel) {
+                                return;
+                            }
                             if (channel.startsWith('room:') && subscribers[channel].some(subscriber => subscriber.userId === socket.userId)) {
                                 unsubscribe(socket, channel);
                             }
@@ -66,7 +66,8 @@ export const initRooms = (wss) => {
                     console.log(`${userId} -> unsubscribe -> ${data.channel}`);
                     unsubscribe(socket, data.channel);
                 } else if (type === 'publish') {
-                    console.log(`${userId} -> publish -> ${data.channel}`);
+                    console.log(`${userId} -> publish -> ${data.channel}: ${JSON.stringify(data.data)}`);
+                    channels[data.channel] = data.data;
                     publish(data.channel, data.data);
                 }
             } catch (error) {
@@ -113,6 +114,7 @@ const unsubscribe = (socket, channel) => {
 
 const publish = (channel, data) => {
     if (!subscribers[channel]) {
+        console.log(`publish -> ${channel} not found`)
         return;
     }
     subscribers[channel].forEach(socket => {
