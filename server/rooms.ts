@@ -1,30 +1,37 @@
-import crypto from 'crypto';
-import url from 'url';
-const rooms = new Map();
+import { randomUUID } from 'crypto';
+import * as url from 'url';
+import { PotionChicken } from './games/potion-chicken';
+import { WebSocketServer } from 'ws';
 
-const props = {}
+import { Room, ChannelsList, ActionResponse } from './types';
+
+const props = {
+    wss: null as WebSocketServer | null,
+}
 // The list of users in each channel
 const subscribers = {
-    rooms: []
+    rooms: [] as Room[]
 }
-// The blobs themselves (rooms, user:x, room:x, etc.)
-const channels = {
+
+const channels: ChannelsList = {
     rooms: {
         public: [{
-            id: crypto.randomUUID(),
+            toString: () => '',
+            id: randomUUID(),
             name: 'Room 1',
             playerCount: 0,
             maxPlayers: 2
-        }]
-    },
+        }
+        ]
+    }
 }
 
 export const initRooms = (wss) => {
-    props.wss = wss;
+    props.wss = wss as WebSocketServer;
     wss.on('connection', (socket, req) => {
         // get userId from req.headers.url
         // example: url: '/?userId=770da43d-faae-4a2f-abde-c6bbc9a5ecf1',
-        const userId = url.parse(req.url, true).query.userId || crypto.randomUUID();
+        const userId = url.parse(req.url, true).query.userId || randomUUID();
         socket.userId = userId;
         console.log(`${userId} -> connected`);
         socket.on('message', (message) => {
@@ -35,6 +42,15 @@ export const initRooms = (wss) => {
                     subscribe(socket, data.channel);
                     if (data.channel.startsWith('room:')) {
                         const roomId = data.channel.split(':')[1];
+                        let game = channels[data.channel]
+                        if (!game) {
+                            game = new PotionChicken({
+                                id: roomId,
+                                name: `Room ${channels.rooms.public.length + 1}`,
+                                playerCount: 0,
+                                maxPlayers: 2
+                            })
+                        }
                         // Remove the user from any other room channels
                         Object.keys(subscribers).forEach(channel => {
                             if (channel === data.channel) {
@@ -65,12 +81,25 @@ export const initRooms = (wss) => {
                 } else if (type === 'unsubscribe') {
                     console.log(`${userId} -> unsubscribe -> ${data.channel}`);
                     unsubscribe(socket, data.channel);
-                } else if (type === 'publish') {
+                }
+                else if (type === 'action') {
+                    console.log(`${userId} -> action -> ${data.channel}: ${JSON.stringify(data.data)}`);
+                    // get a player's room object
+                    const room = channels.rooms.public.find(room => room.id === data.channel.split(':')[1]);
+                    if (room) {
+                        const response: ActionResponse = room.action?.({ ...data.data, playerId: socket.userId }) || [];
+                        response.forEach(message => {
+                            publish(message.channel, message.data);
+                        });
+                        publish(`room:${room.id}`, room.toString());
+                    }
+                }
+                else if (type === 'publish') {
                     console.log(`${userId} -> publish -> ${data.channel}: ${JSON.stringify(data.data)}`);
                     channels[data.channel] = data.data;
                     publish(data.channel, data.data);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error(`${userId} -> error parsing message: ${error.message}`);
                 console.log(message)
             }

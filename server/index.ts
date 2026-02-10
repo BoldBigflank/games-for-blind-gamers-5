@@ -1,5 +1,6 @@
 const WebSocketServer = require('ws').WebSocketServer;
 const { initRooms } = require('./rooms');
+const { PotionChicken } = require('./games/potion-chicken');
 
 const port = process.env.PORT || 3000;
 
