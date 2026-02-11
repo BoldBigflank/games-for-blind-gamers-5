@@ -43,13 +43,14 @@ export const initRooms = (wss) => {
                     if (data.channel.startsWith('room:')) {
                         const roomId = data.channel.split(':')[1];
                         let game = channels[data.channel]
-                        if (!game) {
+                        if (Object.keys(game).length === 0 || game === undefined) {
                             game = new PotionChicken({
                                 id: roomId,
                                 name: `Room ${channels.rooms.public.length + 1}`,
                                 playerCount: 0,
                                 maxPlayers: 2
                             })
+                            channels[data.channel] = game
                         }
                         // Remove the user from any other room channels
                         Object.keys(subscribers).forEach(channel => {
@@ -85,7 +86,7 @@ export const initRooms = (wss) => {
                 else if (type === 'action') {
                     console.log(`${userId} -> action -> ${data.channel}: ${JSON.stringify(data.data)}`);
                     // get a player's room object
-                    const room = channels.rooms.public.find(room => room.id === data.channel.split(':')[1]);
+                    const room = channels[data.channel]
                     if (room) {
                         const response: ActionResponse = room.action?.({ ...data.data, playerId: socket.userId }) || [];
                         response.forEach(message => {

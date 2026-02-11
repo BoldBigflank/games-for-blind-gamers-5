@@ -122,6 +122,7 @@ export class PotionChicken implements Room {
     }
 
     action({ playerId, action }) {
+        console.log(`potion-chicken action: ${action}`);
         const player = this.players.find(p => p.id === playerId);
         if (!player) {
             return [];
