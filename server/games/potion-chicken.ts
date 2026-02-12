@@ -1,41 +1,45 @@
-import { PlayerType, Room } from '../types';
+import { PlayerType, Room, ActionResponse } from '../types';
+import { shuffle } from '../utils';
 
 type Card = {
     name: string;
-    values: string[];
+    suit: string;
+    value: number;
 }
 
 
 const cardStack: Card[] = [
-    { name: "Aloe", values: ['1-a'] },
-    { name: "Aloe", values: ['1-a'] },
-    { name: "Aloe", values: ['1-a'] },
-    { name: "Aloe", values: ['1-a'] },
-    { name: "Aloe", values: ['1-a'] },
-    { name: "Aloe", values: ['1-a'] },
-    { name: "Belladonna", values: ['1-b'] },
-    { name: "Belladonna", values: ['1-b'] },
-    { name: "Belladonna", values: ['1-b'] },
-    { name: "Belladonna", values: ['1-b'] },
-    { name: "Belladonna", values: ['1-b'] },
-    { name: "Belladonna", values: ['1-b'] },
-    { name: "Cactus", values: ['1-c'] },
-    { name: "Cactus", values: ['1-c'] },
-    { name: "Cactus", values: ['1-c'] },
-    { name: "Cactus", values: ['1-c'] },
-    { name: "Cactus", values: ['1-c'] },
-    { name: "Cactus", values: ['1-c'] },
+    { name: "Aloe", suit: 'a', value: 1 },
+    { name: "Aloe", suit: 'a', value: 1 },
+    { name: "Aloe", suit: 'a', value: 1 },
+    { name: "Aloe", suit: 'a', value: 1 },
+    { name: "Aloe", suit: 'a', value: 1 },
+    { name: "Aloe", suit: 'a', value: 1 },
+    { name: "Belladonna", suit: 'b', value: 1 },
+    { name: "Belladonna", suit: 'b', value: 1 },
+    { name: "Belladonna", suit: 'b', value: 1 },
+    { name: "Belladonna", suit: 'b', value: 1 },
+    { name: "Belladonna", suit: 'b', value: 1 },
+    { name: "Belladonna", suit: 'b', value: 1 },
+    { name: "Cactus", suit: 'c', value: 1 },
+    { name: "Cactus", suit: 'c', value: 1 },
+    { name: "Cactus", suit: 'c', value: 1 },
+    { name: "Cactus", suit: 'c', value: 1 },
+    { name: "Cactus", suit: 'c', value: 1 },
+    { name: "Cactus", suit: 'c', value: 1 },
 ]
 
 class Player implements PlayerType {
     id: string;
     name: string;
+    state: string;
     hand: Card[];
     hp: number;
 
-    constructor(name: string) {
-        this.id = crypto.randomUUID();
-        this.name = name;
+    constructor(playerId: string) {
+        this.id = playerId
+        this.name = playerId;
+        this.state = 'wait';
         this.hand = [];
         this.hp = 3;
     }
@@ -58,15 +62,6 @@ class Player implements PlayerType {
     }
 }
 
-const shuffle = (array: any[]) => {
-    // Fisher-Yates shuffle
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
 // Create a class for the game
 export class PotionChicken implements Room {
     name: string;
@@ -87,7 +82,7 @@ export class PotionChicken implements Room {
         this.players = [];
         this.deck = [];
         this.pot = [];
-        this.state = 'lobby';
+        this.state = 'waiting';
         this.turn = 0;
     }
     toString() {
@@ -102,52 +97,112 @@ export class PotionChicken implements Room {
         })
     }
 
-    addPlayer(name) {
-        const player = new Player(name);
+    addPlayer(playerId) {
+        const player = new Player(playerId);
         if (this.players.some(p => p.id === player.id)) {
             return;
         }
         this.players.push(player);
-        if (this.players.length === 2) {
-            this.startGame();
-        }
+        this.playerCount++;
     }
 
     removePlayer(player) {
         this.players = this.players.filter(p => p !== player);
     }
 
+    updateBlobs = (): ActionResponse[] => [
+        {
+            channel: `room:${this.id}`,
+            data: this.calculateRoomBlob()
+        },
+        ...this.players.map(p => ({
+            channel: `user:${p.id}`,
+            data: this.calculateUserBlob(p.id)
+        }))
+    ]
+
+    calculateRoomBlob(): Record<string, any> {
+        return {
+            name: this.name,
+            id: this.id,
+            playerCount: this.playerCount,
+            maxPlayers: this.maxPlayers,
+            turn: this.turn,
+        }
+    }
+
+    calculateUserBlob(playerId: string): Record<string, any> {
+        const blob: Record<string, any> = {}
+        const player = this.players.find(p => p.id === playerId);
+        if (!player) {
+            return {};
+        }
+        blob.hp = player.hp;
+        const playerIndex = this.players.indexOf(player);
+        if (player) {
+            player.state = 'wait';
+            if (this.turn === playerIndex) {
+                if (this.state === 'playing') {
+                    blob.state = 'choose';
+                    blob.choices = [
+                        ...player.hand.map((c, i) => ({
+                            value: i,
+                            label: `${c.name} of ${c.suit}`,
+                        })),
+                        'challenge',
+                    ]
+                } else if (this.state === 'challenging') {
+                    blob.state = 'challenge';
+                    blob.choices = [
+                        { value: 'drink', label: 'Drink the potion' },
+                    ]
+                }
+            } else {
+                blob.state = 'wait';
+            }
+            blob.hand = player.hand
+        }
+        return blob;
+    }
+
     setState(state) {
         this.state = state;
     }
 
-    action({ playerId, action }) {
-        console.log(`potion-chicken action: ${action}`);
+    action({ playerId, action, choice }: { playerId: string, action: string, choice: string }): ActionResponse[] {
+        console.log(`potion-chicken action: ${action}, choice: ${choice}`);
         const player = this.players.find(p => p.id === playerId);
         if (!player) {
             return [];
         }
-        const cardIndex = action.index
         // a player can add a card from their hand to the pot
         // a player can challenge the previous player to drink the potion
         // A player can start the next round
 
-        const response = [];
         switch (action) {
             case 'start':
                 this.setState('playing');
+                this.startGame();
                 break;
-            case 'play':
-                // TODO: Validate the play
-                // Add the card to the pot
-                const card = player.removeCardFromHand(cardIndex);
-                this.addCardToPot(player, card);
+            case 'choose':
+                if (choice === 'challenge') {
+                    // TODO: Challenge the previous player to drink the potion
+                    this.setState('challenging');
+                    this.turn = (this.turn - 1 + this.players.length) % this.players.length;
+                } else {
+                    const cardIndex = parseInt(choice);
+                    // TODO: Validate the play
+                    // Add the card to the pot
+                    const card = player.removeCardFromHand(cardIndex);
+                    this.addCardToPot(player, card);
 
-                this.turn = (this.turn + 1) % this.players.length;
+                    this.turn = (this.turn + 1) % this.players.length;
+                }
                 break;
             case 'dare':
                 break;
         }
+        const response = this.updateBlobs();
         return response;
     }
 
