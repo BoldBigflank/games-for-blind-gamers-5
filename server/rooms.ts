@@ -16,16 +16,7 @@ const subscribers = {
 }
 
 const channels: ChannelsList = {
-    rooms: {
-        public: [{
-            toString: () => '',
-            id: randomUUID(),
-            name: 'Room 1',
-            playerCount: 0,
-            maxPlayers: 2
-        }
-        ]
-    }
+
 }
 
 export const initRooms = (wss) => {
@@ -36,28 +27,28 @@ export const initRooms = (wss) => {
         const userId = url.parse(req.url, true).query.userId || randomUUID();
         socket.userId = userId;
         // log in green
-        if (DEBUG) colorLog('green', `${userId} -> connected`);
+        if (DEBUG) colorLog('green', `🚶‍➡️ ${userId} -> connected`);
         socket.on('message', (message) => {
             const socketColor = colorFromSeed(socket.userId);
             try {
                 const { type, ...data } = JSON.parse(message);
                 if (type === 'subscribe') {
-                    if (DEBUG) colorLog(socketColor, `${userId} -> subscribe -> ${data.channel}`);
+                    if (DEBUG) colorLog(socketColor, `📝 ${userId} -> subscribe -> ${data.channel}`);
                     subscribe(socket, data.channel);
                     if (data.channel.startsWith('room:')) {
                         const roomId = data.channel.split(':')[1];
                         let game = channels[data.channel]
-                        if (Object.keys(game).length === 0 || game === undefined) {
+                        if (!game || !game.id) {
                             game = new PotionChicken({
                                 id: roomId,
-                                name: `Room ${channels.rooms.public.length + 1}`,
+                                name: `PotionChicken room ${roomId}`,
                                 playerCount: 0,
                                 maxPlayers: 2
                             })
                             channels[data.channel] = game
                         }
                         // Add the player to the game
-                        game.addPlayer(socket.userId);
+                        if (game.addPlayer) game.addPlayer(socket.userId);
                         // Remove the user from any other room channels
                         Object.keys(subscribers).forEach(channel => {
                             if (channel === data.channel) {
@@ -67,23 +58,14 @@ export const initRooms = (wss) => {
                                 unsubscribe(socket, channel);
                             }
                         });
-                        // If it's not in the public room, add it
-                        if (!channels.rooms.public.some(room => room.id === roomId)) {
-                            channels.rooms.public.push({
-                                id: roomId,
-                                name: `Room ${channels.rooms.public.length + 1}`,
-                                playerCount: 0,
-                                maxPlayers: 2
-                            });
-                        }
-                        publish('rooms', channels.rooms);
+                        publishRooms();
                     }
                 } else if (type === 'unsubscribe') {
-                    if (DEBUG) colorLog(socketColor, `${userId} -> unsubscribe -> ${data.channel}`);
+                    if (DEBUG) colorLog(socketColor, `🚪 ${userId} -> unsubscribe -> ${data.channel}`);
                     unsubscribe(socket, data.channel);
                 }
                 else if (type === 'action') {
-                    if (DEBUG) colorLog(socketColor, `${userId} -> action -> ${data.channel}: ${JSON.stringify(data.data)}`);
+                    if (DEBUG) colorLog(socketColor, `📨 ${userId} -> action -> ${data.channel}: ${JSON.stringify(data.data)}`);
                     // get a player's room object
                     const room = channels[data.channel]
                     if (room) {
@@ -91,17 +73,20 @@ export const initRooms = (wss) => {
                         // if (DEBUG) colorLog(socketColor, `${userId} -> action response: ${JSON.stringify(response, null, 2)}`);
                         response.forEach((message: ActionResponse) => {
                             publish(message.channel, message.data);
+                            if (message.channel.startsWith('room:')) {
+                                publishRooms(); // Update when a room changes (possible state change)
+                            }
                         });
                     }
                 }
                 else if (type === 'publish') {
-                    if (DEBUG) colorLog(socketColor, `${userId} -> publish -> ${data.channel}: ${JSON.stringify(data.data)}`);
+                    if (DEBUG) colorLog(socketColor, `📢 ${userId} -> publish -> ${data.channel}: ${JSON.stringify(data.data)}`);
                     channels[data.channel] = data.data;
                     publish(data.channel, data.data);
                 }
             } catch (error: any) {
                 console.error(`${userId} -> error parsing message: ${error.message}`);
-                if (DEBUG) colorLog('red', `${userId} -> error parsing message: ${error.message}`);
+                if (DEBUG) colorLog('red', `❌ ${userId} -> error parsing message: ${error.message}`);
             }
         });
         // Subscribe them to their user channel
@@ -141,10 +126,21 @@ const unsubscribe = (socket, channel) => {
     subscribers[channel] = subscribers[channel].filter(subscriber => subscriber.userId !== socket.userId);
 }
 
+const publishRooms = () => {
+    const blob = Object.values(channels).filter(channel => channel?.id?.startsWith('room:')).map(channel => (channel ? {
+        id: channel.id,
+        state: channel.state,
+        name: channel.name,
+        playerCount: channel.playerCount,
+        maxPlayers: channel.maxPlayers,
+    } : undefined))
+    publish('rooms', { public: blob });
+}
+
 const publish = (channel, data) => {
     if (DEBUG) blobLog({ channel, data });
     if (!subscribers[channel]) {
-        if (DEBUG) colorLog('yellow', `publish -> ${channel} not found`);
+        if (DEBUG) colorLog('yellow', `❌ publish -> ${channel} not found`);
         return;
     }
     subscribers[channel].forEach(socket => {

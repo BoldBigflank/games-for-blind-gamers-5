@@ -5,19 +5,17 @@ export type ActionResponse = {
 }
 
 export interface Room {
-    id: string;
-    name: string;
-    playerCount: number;
-    maxPlayers: number;
+    id?: string;
+    state?: string;
+    name?: string;
+    playerCount?: number;
+    maxPlayers?: number;
+    addPlayer?: (playerId: string) => void;
     action?: (data: any) => ActionResponse[];
-    toString: () => string;
+    toString?: () => string;
 };
 // The blobs themselves (rooms, user:x, room:x, etc.)
-export type ChannelsList = {
-    rooms: {
-        public: Room[]
-    }
-}
+export type ChannelsList = Record<string, Room | undefined>;
 
 export type PlayerType = {
     id: string;
