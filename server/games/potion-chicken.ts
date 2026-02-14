@@ -1,5 +1,6 @@
-import { PlayerType, Room, ActionResponse } from '../types';
+import { PlayerType, Room } from '../types';
 import { shuffle } from '../utils';
+import { EventEmitter } from 'node:events';
 
 type Card = {
     name: string;
@@ -64,6 +65,7 @@ class Player implements PlayerType {
 
 // Create a class for the game
 export class PotionChicken implements Room {
+    eventEmitter: EventEmitter;
     name: string;
     id: string;
     playerCount: number;
@@ -74,7 +76,8 @@ export class PotionChicken implements Room {
     state: string;
     turn: number;
 
-    constructor({ name, id, playerCount, maxPlayers = 2 }) {
+    constructor(eventEmitter: EventEmitter, { name, id, playerCount, maxPlayers = 2 }) {
+        this.eventEmitter = eventEmitter;
         this.name = name;
         this.id = id;
         this.playerCount = playerCount;
@@ -104,22 +107,19 @@ export class PotionChicken implements Room {
         }
         this.players.push(player);
         this.playerCount++;
+        this.publishBlobs();
     }
 
     removePlayer(player) {
         this.players = this.players.filter(p => p !== player);
     }
 
-    updateBlobs = (): ActionResponse[] => [
-        {
-            channel: `room:${this.id}`,
-            data: this.calculateRoomBlob()
-        },
-        ...this.players.map(p => ({
-            channel: `user:${p.id}`,
-            data: this.calculateUserBlob(p.id)
-        }))
-    ]
+    publishBlobs = (): void => {
+        this.eventEmitter.emit('publish', `room:${this.id}`, this.calculateRoomBlob());
+        this.players.forEach(p => {
+            this.eventEmitter.emit('publish', `user:${p.id}`, this.calculateUserBlob(p.id));
+        });
+    }
 
     calculateRoomBlob(): Record<string, any> {
         return {
@@ -142,7 +142,12 @@ export class PotionChicken implements Room {
         if (player) {
             player.state = 'wait';
             if (this.turn === playerIndex) {
-                if (this.state === 'playing') {
+                if (this.state === 'waiting') {
+                    blob.state = 'choose'
+                    blob.choices = [
+                        { value: 'start', label: 'Start the game' },
+                    ]
+                } else if (this.state === 'playing') {
                     blob.state = 'choose';
                     blob.choices = [
                         ...player.hand.map((c, i) => ({
@@ -169,11 +174,11 @@ export class PotionChicken implements Room {
         this.state = state;
     }
 
-    action({ playerId, action, choice }: { playerId: string, action: string, choice: string }): ActionResponse[] {
+    action({ playerId, action, choice }: { playerId: string, action: string, choice: string }) {
         console.log(`potion-chicken action: ${action}, choice: ${choice}`);
         const player = this.players.find(p => p.id === playerId);
         if (!player) {
-            return [];
+            return;
         }
         // a player can add a card from their hand to the pot
         // a player can challenge the previous player to drink the potion
@@ -202,8 +207,7 @@ export class PotionChicken implements Room {
             case 'dare':
                 break;
         }
-        const response = this.updateBlobs();
-        return response;
+        this.publishBlobs();
     }
 
     addCardToPot(player: Player, card: Card) {

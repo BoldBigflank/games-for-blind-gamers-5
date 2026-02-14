@@ -2,13 +2,15 @@ import { randomUUID } from 'crypto';
 import * as url from 'url';
 import { PotionChicken } from './games/potion-chicken';
 import { WebSocketServer } from 'ws';
-import { colorLog, colorFromSeed, blobLog } from './utils';
-import { Room, ChannelsList, ActionResponse } from './types';
+import { colorLog, colorFromSeed, blobLog, generateRoomName } from './utils';
+import { Room, ChannelsList } from './types';
+import { EventEmitter } from 'events';
 
 const DEBUG = true;
 
 const props = {
     wss: null as WebSocketServer | null,
+    eventEmitter: new EventEmitter()
 }
 // The list of users in each channel
 const subscribers = {
@@ -39,16 +41,16 @@ export const initRooms = (wss) => {
                         const roomId = data.channel.split(':')[1];
                         let game = channels[data.channel]
                         if (!game || !game.id) {
-                            game = new PotionChicken({
+                            game = new PotionChicken(props.eventEmitter, {
                                 id: roomId,
-                                name: `PotionChicken room ${roomId}`,
+                                name: generateRoomName(),
                                 playerCount: 0,
                                 maxPlayers: 2
                             })
                             channels[data.channel] = game
                         }
                         // Add the player to the game
-                        if (game.addPlayer) game.addPlayer(socket.userId);
+                        if (game && game.addPlayer) game.addPlayer(socket.userId);
                         // Remove the user from any other room channels
                         Object.keys(subscribers).forEach(channel => {
                             if (channel === data.channel) {
@@ -58,7 +60,7 @@ export const initRooms = (wss) => {
                                 unsubscribe(socket, channel);
                             }
                         });
-                        publishRooms();
+                        publish('rooms', getChannelData('rooms'));
                     }
                 } else if (type === 'unsubscribe') {
                     if (DEBUG) colorLog(socketColor, `🚪 ${userId} -> unsubscribe -> ${data.channel}`);
@@ -69,14 +71,7 @@ export const initRooms = (wss) => {
                     // get a player's room object
                     const room = channels[data.channel]
                     if (room) {
-                        const response: ActionResponse[] = room.action?.({ ...data.data, playerId: socket.userId }) || [];
-                        // if (DEBUG) colorLog(socketColor, `${userId} -> action response: ${JSON.stringify(response, null, 2)}`);
-                        response.forEach((message: ActionResponse) => {
-                            publish(message.channel, message.data);
-                            if (message.channel.startsWith('room:')) {
-                                publishRooms(); // Update when a room changes (possible state change)
-                            }
-                        });
+                        room.action?.({ ...data.data, playerId: socket.userId });
                     }
                 }
                 else if (type === 'publish') {
@@ -95,7 +90,7 @@ export const initRooms = (wss) => {
             if (subscribers[channel].some(subscriber => subscriber.userId === socket.userId)) {
                 socket.send(JSON.stringify({
                     channel,
-                    data: channels[channel]
+                    data: getChannelData(channel)
                 }));
             }
         });
@@ -110,12 +105,12 @@ const subscribe = (socket, channel) => {
     if (!subscribers[channel].some(subscriber => subscriber.userId === socket.userId)) {
         subscribers[channel].push(socket);
     }
-    if (!channels[channel]) {
+    if (!getChannelData(channel)) {
         channels[channel] = {};
     }
     socket.send(JSON.stringify({
         channel,
-        data: channels[channel]
+        data: getChannelData(channel)
     }));
 }
 
@@ -126,15 +121,13 @@ const unsubscribe = (socket, channel) => {
     subscribers[channel] = subscribers[channel].filter(subscriber => subscriber.userId !== socket.userId);
 }
 
-const publishRooms = () => {
-    const blob = Object.values(channels).filter(channel => channel?.id?.startsWith('room:')).map(channel => (channel ? {
-        id: channel.id,
-        state: channel.state,
-        name: channel.name,
-        playerCount: channel.playerCount,
-        maxPlayers: channel.maxPlayers,
-    } : undefined))
-    publish('rooms', { public: blob });
+const getChannelData = (channel: string) => {
+    if (channel === 'rooms') {
+        return Object.keys(channels)
+            .filter(channelKey => channelKey?.startsWith('room:'))
+            .map((channelKey) => channels[channelKey])
+    }
+    return channels[channel] || {};
 }
 
 const publish = (channel, data) => {
@@ -150,3 +143,8 @@ const publish = (channel, data) => {
         }));
     });
 }
+
+props.eventEmitter.on('publish', (channel, data) => {
+    if (DEBUG) colorLog('blue', `📢 publish -> ${channel}: ${JSON.stringify(data)}`);
+    publish(channel, data);
+});

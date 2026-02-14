@@ -1,9 +1,3 @@
-
-export type ActionResponse = {
-    channel: string;
-    data: Record<string, any>;
-}
-
 export interface Room {
     id?: string;
     state?: string;
@@ -11,7 +5,7 @@ export interface Room {
     playerCount?: number;
     maxPlayers?: number;
     addPlayer?: (playerId: string) => void;
-    action?: (data: any) => ActionResponse[];
+    action?: (data: any) => void;
     toString?: () => string;
 };
 // The blobs themselves (rooms, user:x, room:x, etc.)

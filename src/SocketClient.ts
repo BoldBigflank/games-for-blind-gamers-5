@@ -1,10 +1,10 @@
 const channels: Record<string, any> = {}
 let ws: WebSocket
 
-const publish = (channel: string, data: any) => {
-  console.log(`publish -> ${channel}: ${JSON.stringify(data)}`)
-  ws.send(JSON.stringify({ type: 'publish', channel, data }))
-}
+// const publish = (channel: string, data: any) => {
+//   console.log(`publish -> ${channel}: ${JSON.stringify(data)}`)
+//   ws.send(JSON.stringify({ type: 'publish', channel, data }))
+// }
 const subscribe = (channel: string) => {
   console.log(`subscribe -> ${channel}`)
   ws.send(JSON.stringify({ type: 'subscribe', channel }))
@@ -33,8 +33,7 @@ export function setupWebSocketGameLobbyClient() {
     }
     if (channel === 'rooms') {
       // update the rooms list
-      const rooms = data.public
-      updateRoomsList(rooms)
+      updateRoomsList(data)
     }
     updateChannelMessages()
   }
@@ -44,10 +43,6 @@ export function setupWebSocketGameLobbyClient() {
   document.getElementById('create-room')?.addEventListener('click', () => {
     const roomId = crypto.randomUUID()
     subscribe(`room:${roomId}`)
-    publish(`room:${roomId}`, {
-      name: `Room ${channels.rooms.public.length + 1}`,
-      state: 'waiting',
-    })
     unsubscribe('rooms')
   })
 }
@@ -59,6 +54,7 @@ function updateChannelMessages() {
   }
 }
 function updateRoomsList(rooms: any[]) {
+  console.log(`updateRoomsList -> ${JSON.stringify(rooms, null, 2)}`)
   const roomsList = document.getElementById('rooms-list')
   if (roomsList) {
     roomsList.innerHTML = ''
