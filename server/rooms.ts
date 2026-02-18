@@ -17,9 +17,17 @@ const subscribers = {
     rooms: [] as Room[]
 }
 
-const channels: ChannelsList = {
+const testRoom = new PotionChicken(props.eventEmitter, {
+    id: '1',
+    name: generateRoomName(),
+    playerCount: 0,
+    maxPlayers: 2
+})
 
+const channels: ChannelsList = {
+    "room:1": testRoom
 }
+
 
 export const initRooms = (wss) => {
     props.wss = wss as WebSocketServer;
@@ -89,6 +97,7 @@ export const initRooms = (wss) => {
         });
         // Subscribe them to their user channel
         subscribe(socket, `user:${userId}`);
+        subscribe(socket, 'rooms');
         Object.keys(subscribers).forEach(channel => {
             if (subscribers[channel].some(subscriber => subscriber.userId === socket.userId)) {
                 socket.send(JSON.stringify({
@@ -149,5 +158,6 @@ const publish = (channel, data) => {
 
 props.eventEmitter.on('publish', (channel, data) => {
     if (DEBUG) colorLog('blue', `📢 publish -> ${channel}: ${JSON.stringify(data)}`);
+    channels[channel] = data;
     publish(channel, data);
 });

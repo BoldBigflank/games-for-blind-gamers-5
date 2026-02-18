@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.4",
+    "@vueuse/core": "^14.2.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "pinia": "^3.0.4",

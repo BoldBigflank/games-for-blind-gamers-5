@@ -132,10 +132,12 @@ export class PotionChicken implements Room {
     }
 
     calculateUserBlob(playerId: string): Record<string, any> {
-        const blob: Record<string, any> = {}
+        const blob: Record<string, any> = {
+            id: playerId,
+        }
         const player = this.players.find(p => p.id === playerId);
         if (!player) {
-            return {};
+            return blob;
         }
         blob.hp = player.hp;
         const playerIndex = this.players.indexOf(player);
