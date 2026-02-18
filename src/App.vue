@@ -1,25 +1,14 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useNotificationStore } from './stores/notificationStore'
 import { useWebsocketStore } from './stores/websocketStore'
 import Lobby from './Lobby.vue'
 import Room from './Room.vue'
 import User from './User.vue'
-const ws = ref(null)
-const isConnected = ref(false)
-const retryInterval = 3000
-let retryTimeout = null
 
 const websocketStore = useWebsocketStore()
 
 onUnmounted(() => {
-  if (ws.value) {
-    ws.value.close()
-  }
-  if (retryTimeout) {
-    clearTimeout(retryTimeout)
-    retryTimeout = null
-  }
+  websocketStore.close()
 })
 
 </script>
