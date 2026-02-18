@@ -26,7 +26,10 @@ export const initRooms = (wss) => {
     wss.on('connection', (socket, req) => {
         // get userId from req.headers.url
         // example: url: '/?userId=770da43d-faae-4a2f-abde-c6bbc9a5ecf1',
-        const userId = url.parse(req.url, true).query.userId || randomUUID();
+        let userId = url.parse(req.url, true).query.userId
+        if (!userId || userId === 'null') {
+            userId = randomUUID();
+        }
         socket.userId = userId;
         // log in green
         if (DEBUG) colorLog('green', `🚶‍➡️ ${userId} -> connected`);
