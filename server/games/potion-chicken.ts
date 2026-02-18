@@ -124,10 +124,14 @@ export class PotionChicken implements Room {
     calculateRoomBlob(): Record<string, any> {
         return {
             name: this.name,
+            state: this.state,
             id: this.id,
             playerCount: this.playerCount,
             maxPlayers: this.maxPlayers,
             turn: this.turn,
+            players: this.players.map(p => p.name),
+            deck: this.deck.map(c => c.name),
+            pot: this.pot.map(c => c.name),
         }
     }
 
@@ -156,7 +160,7 @@ export class PotionChicken implements Room {
                             value: i,
                             label: `${c.name} of ${c.suit}`,
                         })),
-                        'challenge',
+                        { value: 'challenge', label: 'Challenge the previous player to drink the potion' },
                     ]
                 } else if (this.state === 'challenging') {
                     blob.state = 'challenge';
@@ -176,8 +180,8 @@ export class PotionChicken implements Room {
         this.state = state;
     }
 
-    action({ playerId, action, choice }: { playerId: string, action: string, choice: string }) {
-        console.log(`potion-chicken action: ${action}, choice: ${choice}`);
+    action({ playerId, choice }: { playerId: string, choice: string }) {
+        console.log(`potion-chicken action: ${choice}`);
         const player = this.players.find(p => p.id === playerId);
         if (!player) {
             return;
@@ -186,25 +190,24 @@ export class PotionChicken implements Room {
         // a player can challenge the previous player to drink the potion
         // A player can start the next round
 
-        switch (action) {
+        switch (choice) {
             case 'start':
                 this.setState('playing');
                 this.startGame();
                 break;
-            case 'choose':
-                if (choice === 'challenge') {
-                    // TODO: Challenge the previous player to drink the potion
-                    this.setState('challenging');
-                    this.turn = (this.turn - 1 + this.players.length) % this.players.length;
-                } else {
-                    const cardIndex = parseInt(choice);
-                    // TODO: Validate the play
-                    // Add the card to the pot
-                    const card = player.removeCardFromHand(cardIndex);
-                    this.addCardToPot(player, card);
+            case 'challenge':
+                // TODO: Challenge the previous player to drink the potion
+                this.setState('challenging');
+                this.turn = (this.turn - 1 + this.players.length) % this.players.length;
+                break;
+            case 'card':
+                const cardIndex = parseInt(choice);
+                // TODO: Validate the play
+                // Add the card to the pot
+                const card = player.removeCardFromHand(cardIndex);
+                this.addCardToPot(player, card);
 
-                    this.turn = (this.turn + 1) % this.players.length;
-                }
+                this.turn = (this.turn + 1) % this.players.length;
                 break;
             case 'dare':
                 break;

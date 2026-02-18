@@ -28,6 +28,8 @@ const channels: ChannelsList = {
     "room:1": testRoom
 }
 
+const games: Record<string, Room> = {}
+
 
 export const initRooms = (wss) => {
     props.wss = wss as WebSocketServer;
@@ -58,7 +60,7 @@ export const initRooms = (wss) => {
                                 playerCount: 0,
                                 maxPlayers: 2
                             })
-                            channels[data.channel] = game
+                            games[data.channel] = game
                         }
                         // Add the player to the game
                         if (game && game.addPlayer) game.addPlayer(socket.userId);
@@ -80,9 +82,11 @@ export const initRooms = (wss) => {
                 else if (type === 'action') {
                     if (DEBUG) colorLog(socketColor, `📨 ${userId} -> action -> ${data.channel}: ${JSON.stringify(data.data)}`);
                     // get a player's room object
-                    const room = channels[data.channel]
+                    const room = games[data.channel]
                     if (room) {
                         room.action?.({ ...data.data, playerId: socket.userId });
+                    } else {
+                        console.log('room not found', data.channel);
                     }
                 }
                 else if (type === 'publish') {

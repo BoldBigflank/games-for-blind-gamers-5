@@ -15,52 +15,52 @@ export const testGame = async () => {
     ws2.send(JSON.stringify({ type: 'subscribe', channel }));
     await sleep(1000);
 
-    // // Start the game
-    // ws1.send(JSON.stringify({ type: 'action', channel, data: { action: 'start' } }));
+    // Start the game
+    ws1.send(JSON.stringify({ type: 'action', channel, data: { choice: 'start' } }));
 
-    // await sleep(1000);
-    // // Player 1 plays a card
-    // ws1.send(JSON.stringify({ type: 'action', channel, data: { action: 'choose', choice: 0 } }));
-    // await sleep(1000);
+    await sleep(1000);
+    // Player 1 plays a card
+    ws1.send(JSON.stringify({ type: 'action', channel, data: { choice: 0 } }));
+    await sleep(1000);
 
-    // // Player 2 plays a card
-    // ws2.send(JSON.stringify({ type: 'action', channel, data: { action: 'choose', choice: 0 } }));
-    // await sleep(1000);
+    // Player 2 plays a card
+    ws2.send(JSON.stringify({ type: 'action', channel, data: { choice: 0 } }));
+    await sleep(1000);
 
-    // // Player 1 challenges the previous player
-    // ws1.send(JSON.stringify({ type: 'action', channel, data: { action: 'choose', choice: 'challenge' } }));
-    // await sleep(1000);
+    // Player 1 challenges the previous player
+    ws1.send(JSON.stringify({ type: 'action', channel, data: { choice: 'challenge' } }));
+    await sleep(1000);
 
-    // // Player 2 drinks the potion
-    // ws2.send(JSON.stringify({ type: 'action', channel, data: { action: 'choose', choice: 'drink' } }));
-    // await sleep(1000);
+    // Player 2 drinks the potion
+    ws2.send(JSON.stringify({ type: 'action', channel, data: { choice: 'drink' } }));
+    await sleep(1000);
 
-    // // Player 2 starts the next round
-    // ws2.send(JSON.stringify({ type: 'action', channel, data: { action: 'choose', choice: 'start' } }));
-    // await sleep(1000);
+    // Player 2 starts the next round
+    ws2.send(JSON.stringify({ type: 'action', channel, data: { choice: 'start' } }));
+    await sleep(1000);
 
-    // // Player 2 plays a card
-    // ws2.send(JSON.stringify({ type: 'action', channel, data: { action: 'choose', choice: 0 } }));
-    // await sleep(1000);
+    // Player 2 plays a card
+    ws2.send(JSON.stringify({ type: 'action', channel, data: { choice: 0 } }));
+    await sleep(1000);
 
-    // // Player 1 plays a card
-    // ws1.send(JSON.stringify({ type: 'action', channel, data: { action: 'choose', choice: 0 } }));
-    // await sleep(1000);
+    // Player 1 plays a card
+    ws1.send(JSON.stringify({ type: 'action', channel, data: { choice: 0 } }));
+    await sleep(1000);
 
-    // // Player 2 plays a card
-    // ws2.send(JSON.stringify({ type: 'action', channel, data: { action: 'choose', choice: 0 } }));
-    // await sleep(1000);
+    // Player 2 plays a card
+    ws2.send(JSON.stringify({ type: 'action', channel, data: { choice: 0 } }));
+    await sleep(1000);
 
-    // // Player 1 challenges the previous player
-    // ws1.send(JSON.stringify({ type: 'action', channel, data: { action: 'choose', choice: 'challenge' } }));
-    // await sleep(1000);
+    // Player 1 challenges the previous player
+    ws1.send(JSON.stringify({ type: 'action', channel, data: { choice: 'challenge' } }));
+    await sleep(1000);
 
-    // // Player 2 drinks the potion
-    // ws2.send(JSON.stringify({ type: 'action', channel, data: { action: 'choose', choice: 'drink' } }));
-    // await sleep(1000);
+    // Player 2 drinks the potion
+    ws2.send(JSON.stringify({ type: 'action', channel, data: { choice: 'drink' } }));
+    await sleep(1000);
 
-    // // Player 2 starts the next round
-    // ws2.send(JSON.stringify({ type: 'action', channel, data: { action: 'choose', choice: 'start' } }));
+    // Player 2 starts the next round
+    ws2.send(JSON.stringify({ type: 'action', channel, data: { choice: 'start' } }));
 
     // Close the connections
     ws1.close();

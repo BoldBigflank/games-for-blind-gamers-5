@@ -15,13 +15,11 @@ onUnmounted(() => {
 
 <template>
   <h1>Games for Blind Gamers 5</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
   <Lobby />
   <Room />
   <User />
+  <pre>[room]{{ JSON.stringify(websocketStore.roomBlob, null, 2) }}</pre>
+  <pre>[user]{{ JSON.stringify(websocketStore.userBlob, null, 2) }}</pre>
 </template>
 
 <style scoped></style>

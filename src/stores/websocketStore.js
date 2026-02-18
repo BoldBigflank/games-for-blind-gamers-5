@@ -33,6 +33,9 @@ export const useWebsocketStore = defineStore('websocketStore', () => {
       },
     }
   )
+  const action = (channel, data) => {
+    send(JSON.stringify({ type: 'action', channel, data }))
+  }
   const publish = (channel, data) => {
     send(JSON.stringify({ type: 'publish', channel, data }))
   }
@@ -42,5 +45,5 @@ export const useWebsocketStore = defineStore('websocketStore', () => {
   const unsubscribe = (channel) => {
     send(JSON.stringify({ type: 'unsubscribe', channel }))
   }
-  return { status, data, send, open, close, ws, rooms, userBlob, roomBlob, publish, subscribe, unsubscribe }
+  return { status, data, send, open, close, ws, rooms, userBlob, roomBlob, publish, subscribe, unsubscribe, action }
 })

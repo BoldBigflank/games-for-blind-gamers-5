@@ -7,7 +7,7 @@ const websocketStore = useWebsocketStore()
 
 <template>
     <div v-if="!isEmpty(websocketStore.roomBlob)">
-        <h1>Room</h1>
+        <h1>{{websocketStore.roomBlob.name}}</h1>
         <div id="room-info">
             <p>Room Name: {{ websocketStore.roomBlob.name }}</p>
             <p>Room ID: {{ websocketStore.roomBlob.id }}</p>
