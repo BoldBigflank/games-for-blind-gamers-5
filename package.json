@@ -28,7 +28,10 @@
     "**/*.ts?(x)": "bash -c tsc --noEmit",
     "src/**/*.{js,jsx,ts,tsx,json,css,md}": "prettier --write"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@tailwindcss/vite": "^4.2.0",
+    "tailwindcss": "^4.2.0"
+  },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   }

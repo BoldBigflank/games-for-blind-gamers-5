@@ -52,7 +52,7 @@ export const initRooms = (wss) => {
                     subscribe(socket, data.channel);
                     if (data.channel.startsWith('room:')) {
                         const roomId = data.channel.split(':')[1];
-                        let game = channels[data.channel]
+                        let game = games[data.channel]
                         if (!game || !game.id) {
                             game = new PotionChicken(props.eventEmitter, {
                                 id: roomId,
@@ -86,7 +86,7 @@ export const initRooms = (wss) => {
                     if (room) {
                         room.action?.({ ...data.data, playerId: socket.userId });
                     } else {
-                        console.log('room not found', data.channel);
+                        console.error('room not found', data.channel);
                     }
                 }
                 else if (type === 'publish') {

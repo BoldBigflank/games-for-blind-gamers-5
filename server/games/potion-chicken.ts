@@ -48,7 +48,7 @@ class Player implements PlayerType {
         this.hand.push(card);
     }
     removeCardFromHand(index: number): Card {
-        const cardToRemove = this.hand[index];
+        const cardToRemove = { ...this.hand[index] };
         if (!cardToRemove) {
             throw new Error(`Card not found at index ${index}`);
         }
@@ -101,17 +101,51 @@ export class PotionChicken implements Room {
     }
 
     addPlayer(playerId) {
-        const player = new Player(playerId);
-        if (this.players.some(p => p.id === player.id)) {
+        if (this.players.some(p => p.id === playerId)) {
             return;
         }
-        this.players.push(player);
-        this.playerCount++;
+        const newPlayer = new Player(playerId);
+        this.players.push(newPlayer);
+        this.playerCount = this.players.length;
         this.publishBlobs();
     }
 
     removePlayer(player) {
         this.players = this.players.filter(p => p !== player);
+    }
+
+
+    beatsPot(player: Player) {
+        const potCounts = this.sumCards(this.pot, true);
+        const playerCounts = this.sumCards(player.hand, false);
+        return playerCounts.a >= potCounts.b && playerCounts.b >= potCounts.c && playerCounts.c >= potCounts.a;
+    }
+    sumCards(cards: Card[], reduce: boolean = true): { a: number, b: number, c: number } {
+        // a beats b, b beats c, c beats a
+        let counts = {
+            a: 0,
+            b: 0,
+            c: 0,
+        }
+        cards.forEach(card => {
+            counts[card.suit] += card.value;
+        });
+        if (reduce) {
+            // While more than one suit has a count, reduce the counts
+            while (Object.values(counts).filter(count => count > 0).length > 1) {
+                let lowestCount = Infinity;
+                Object.values(counts).forEach(count => {
+                    if (count > 0 && count < lowestCount) {
+                        lowestCount = count;
+                    }
+                });
+                // Reduce the counts by the lowest count
+                Object.keys(counts).forEach(suit => {
+                    counts[suit] = Math.max(0, counts[suit] - lowestCount);
+                });
+            }
+        }
+        return counts;
     }
 
     publishBlobs = (): void => {
@@ -130,8 +164,8 @@ export class PotionChicken implements Room {
             maxPlayers: this.maxPlayers,
             turn: this.turn,
             players: this.players.map(p => p.name),
-            deck: this.deck.map(c => c.name),
-            pot: this.pot.map(c => c.name),
+            deck: this.deck,
+            pot: this.pot,
         }
     }
 
@@ -157,8 +191,8 @@ export class PotionChicken implements Room {
                     blob.state = 'choose';
                     blob.choices = [
                         ...player.hand.map((c, i) => ({
-                            value: i,
-                            label: `${c.name} of ${c.suit}`,
+                            value: `card:${i}`,
+                            label: `${c.value} ${c.name}`,
                         })),
                         { value: 'challenge', label: 'Challenge the previous player to drink the potion' },
                     ]
@@ -181,7 +215,7 @@ export class PotionChicken implements Room {
     }
 
     action({ playerId, choice }: { playerId: string, choice: string }) {
-        console.log(`potion-chicken action: ${choice}`);
+        const [choiceType, choiceValue] = choice.split(':');
         const player = this.players.find(p => p.id === playerId);
         if (!player) {
             return;
@@ -190,7 +224,7 @@ export class PotionChicken implements Room {
         // a player can challenge the previous player to drink the potion
         // A player can start the next round
 
-        switch (choice) {
+        switch (choiceType) {
             case 'start':
                 this.setState('playing');
                 this.startGame();
@@ -201,15 +235,31 @@ export class PotionChicken implements Room {
                 this.turn = (this.turn - 1 + this.players.length) % this.players.length;
                 break;
             case 'drink':
-                // TODO: Drink the potion
-                this.setState('playing');
                 // if their hand doesn't beat the pot, they lose an hp
-                // if their hand beats the pot, the challenger loses an hp
-                // If either of the players is at 0 hp, the game is over
-                // otherwise, start the next round
+                const challenger = this.players[(this.turn + 1) % this.players.length];
+                if (!this.beatsPot(player)) {
+                    player.removeHp(1);
+                } else {
+                    // if their hand beats the pot, the challenger loses an hp
+                    challenger.removeHp(1);
+                    this.turn = (this.turn + 1) % this.players.length;
+                }
+
+                if (player.hp <= 0 || challenger.hp <= 0) {
+                    this.setState('gameover');
+                    return;
+                } else {
+                    // Fill the players hands up to 3 cards
+                    this.players.forEach(player => {
+                        while (player.hand.length < 3) {
+                            this.drawCard(player);
+                        }
+                    });
+                    this.setState('playing');
+                }
                 break;
             case 'card':
-                const cardIndex = parseInt(choice);
+                const cardIndex = parseInt(choiceValue);
                 // TODO: Validate the play
                 // Add the card to the pot
                 const card = player.removeCardFromHand(cardIndex);
@@ -225,13 +275,20 @@ export class PotionChicken implements Room {
 
     addCardToPot(player: Player, card: Card) {
         // Make sure the player 
+        this.pot.push(card);
     }
     startGame() {
         // Shuffle the deck
         this.deck = shuffle([...cardStack]);
         // Deal 3 cards to each player
         this.players.forEach(player => {
-            player.hand = this.deck.slice(0, 3);
+            for (let i = 0; i < 3; i++) {
+                this.drawCard(player);
+            }
         });
+    }
+
+    drawCard(player: Player) {
+        player.hand.push(this.deck.shift() as Card);
     }
 }
