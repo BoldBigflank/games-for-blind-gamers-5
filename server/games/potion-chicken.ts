@@ -163,7 +163,7 @@ export class PotionChicken implements Room {
                         { value: 'challenge', label: 'Challenge the previous player to drink the potion' },
                     ]
                 } else if (this.state === 'challenging') {
-                    blob.state = 'challenge';
+                    blob.state = 'choose';
                     blob.choices = [
                         { value: 'drink', label: 'Drink the potion' },
                     ]
@@ -199,6 +199,14 @@ export class PotionChicken implements Room {
                 // TODO: Challenge the previous player to drink the potion
                 this.setState('challenging');
                 this.turn = (this.turn - 1 + this.players.length) % this.players.length;
+                break;
+            case 'drink':
+                // TODO: Drink the potion
+                this.setState('playing');
+                // if their hand doesn't beat the pot, they lose an hp
+                // if their hand beats the pot, the challenger loses an hp
+                // If either of the players is at 0 hp, the game is over
+                // otherwise, start the next round
                 break;
             case 'card':
                 const cardIndex = parseInt(choice);
