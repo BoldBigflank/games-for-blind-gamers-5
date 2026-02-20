@@ -35,12 +35,17 @@ export const initRooms = (wss) => {
     props.wss = wss as WebSocketServer;
     wss.on('connection', (socket, req) => {
         // get userId from req.headers.url
-        // example: url: '/?userId=770da43d-faae-4a2f-abde-c6bbc9a5ecf1',
+        // example: url: '/?userId=770da43d-faae-4a2f-abde-c6bbc9a5ecf1&userName=John',
         let userId = url.parse(req.url, true).query.userId
+        let userName = url.parse(req.url, true).query.userName
         if (!userId || userId === 'null') {
             userId = randomUUID();
         }
+        if (!userName || userName === 'null') {
+            userName = `Player ${userId.slice(0, 8)}`;
+        }
         socket.userId = userId;
+        socket.userName = userName;
         // log in green
         if (DEBUG) colorLog('green', `🚶‍➡️ ${userId} -> connected`);
         socket.on('message', (message) => {
@@ -63,7 +68,7 @@ export const initRooms = (wss) => {
                             games[data.channel] = game
                         }
                         // Add the player to the game
-                        if (game && game.addPlayer) game.addPlayer(socket.userId);
+                        if (game && game.addPlayer) game.addPlayer(socket.userId, socket.userName);
                         // Remove the user from any other room channels
                         Object.keys(subscribers).forEach(channel => {
                             if (channel === data.channel) {
@@ -81,6 +86,9 @@ export const initRooms = (wss) => {
                 }
                 else if (type === 'action') {
                     if (DEBUG) colorLog(socketColor, `📨 ${userId} -> action -> ${data.channel}: ${JSON.stringify(data.data)}`);
+                    if (data.data.choice?.startsWith('name:')) {
+                        socket.userName = data.data.choice.split(':')[1];
+                    }
                     // get a player's room object
                     const room = games[data.channel]
                     if (room) {

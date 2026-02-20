@@ -1,10 +1,11 @@
 export interface Room {
     id?: string;
+    messages?: string[];
     state?: string;
     name?: string;
     playerCount?: number;
     maxPlayers?: number;
-    addPlayer?: (playerId: string) => void;
+    addPlayer?: (playerId: string, playerName: string) => void;
     action?: (data: any) => void;
     toString?: () => string;
 };

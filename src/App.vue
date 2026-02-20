@@ -14,6 +14,10 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <!-- Top right corner shows connection status -->
+  <div class="absolute top-0 left-0">
+    <span>Connection Status: {{ websocketStore.connectionStatus }}</span>
+  </div>
   <div class="container mx-auto">
     <h1>Games for Blind Gamers 5</h1>
     <div class="flex flex-col gap-4 items-stretch bg-gray-800 rounded-xl shadow-lg p-6">
