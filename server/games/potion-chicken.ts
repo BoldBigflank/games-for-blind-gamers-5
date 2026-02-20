@@ -274,6 +274,10 @@ export class PotionChicken implements Room {
 
                 if (player.hp <= 0 || challenger.hp <= 0) {
                     this.setState('gameover');
+                    // The winner is the player with >0 hp
+                    const winner = this.players.find(p => p.hp > 0);
+                    this.messages.push(`Game over! ${winner?.name} wins!`)
+                    this.setState('gameover');
                 } else {
                     // Move the pot back to the deck
                     this.deck.push(...this.pot);
