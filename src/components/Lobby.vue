@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useWebsocketStore } from './stores/websocketStore'
-import { isEmpty } from './utils'
+import { useWebsocketStore } from '@/stores/websocketStore'
+import { isEmpty } from '@/utils'
 
 const websocketStore = useWebsocketStore()
 const joinRoom = (roomId) => {
@@ -23,9 +23,11 @@ const createRoom = () => {
             class="flex items-center justify-between w-72 rounded-md p-2 bg-white text-black border"
           >
             <span>{{ room.name }}</span>
+            <span>{{ room.playerCount }}/{{ room.maxPlayers }}</span>
             <button
+              :disabled="room.playerCount >= room.maxPlayers || room.state !== 'waiting'"
               @click="joinRoom(room.id)"
-              class="px-2 py-1 rounded text-black border border-gray-300"
+              class="px-2 py-1 rounded text-black border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Join
             </button>

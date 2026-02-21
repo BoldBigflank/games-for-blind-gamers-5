@@ -199,23 +199,29 @@ export class PotionChicken implements Room {
             if (this.turn === playerIndex) {
                 if (this.state === 'waiting') {
                     blob.state = 'choose'
+                    blob.prompt = 'Waiting for more players to join';
                     blob.choices = [];
                     if (this.players.length > 1) {
+                        blob.prompt = 'When everyone is ready, start the game';
                         blob.choices.push({ value: 'start', label: 'Start the game' });
                     }
                 } else if (this.state === 'playing') {
                     blob.state = 'choose';
+                    blob.prompt = 'It\'s your turn to play a card';
                     blob.choices = [
                         ...player.hand.map((c, i) => ({
+                            class: `card ${c.name}`,
                             value: `card:${i}`,
                             label: `${c.value} ${c.name}`,
                         })),
                     ]
                     if (this.pot.length > POT_START_SIZE) {
+                        blob.prompt = 'Play a card or challenge the previous player to drink';
                         blob.choices.push({ value: 'challenge', label: 'Challenge the previous player to drink the potion' });
                     }
                 } else if (this.state === 'challenging') {
                     blob.state = 'choose';
+                    blob.prompt = 'You have been challenged to drink the potion';
                     blob.choices = [
                         { value: 'drink', label: 'Drink the potion' },
                     ]
