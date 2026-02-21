@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import * as url from 'url';
 import { PotionChicken } from './games/potion-chicken';
-import { WebSocketServer } from 'ws';
+import { WebSocketServer, WebSocket } from 'ws';
 import { colorLog, colorFromSeed, blobLog, generateRoomName } from './utils';
 import { Room, ChannelsList } from './types';
 import { EventEmitter } from 'events';
@@ -13,8 +13,8 @@ const props = {
     eventEmitter: new EventEmitter()
 }
 // The list of users in each channel
-const subscribers = {
-    rooms: [] as Room[]
+const subscribers: Record<string, string[]> = {
+    
 }
 
 const testRoom = new PotionChicken(props.eventEmitter, {
@@ -30,31 +30,33 @@ const channels: ChannelsList = {
 
 const games: Record<string, Room> = {}
 
+const sockets: Record<string, WebSocket> = {}
+
 
 export const initRooms = (wss) => {
     props.wss = wss as WebSocketServer;
-    wss.on('connection', (socket, req) => {
+    wss.on('connection', (socket: WebSocket, req) => {
         // get userId from req.headers.url
         // example: url: '/?userId=770da43d-faae-4a2f-abde-c6bbc9a5ecf1&userName=John',
-        let userId = url.parse(req.url, true).query.userId
+        let userId: string = url.parse(req.url, true).query.userId as string|| ''
         let userName = url.parse(req.url, true).query.userName
-        if (!userId || userId === 'null') {
+        if (!userId || userId === 'null' || userId === '') {
             userId = randomUUID();
         }
-        if (!userName || userName === 'null') {
+        if (!userName || userName === 'null' || userName === '') {
             userName = `Player ${userId.slice(0, 8)}`;
         }
+        sockets[userId] = socket;
         socket.userId = userId;
         socket.userName = userName;
-        // log in green
         if (DEBUG) colorLog('green', `🚶‍➡️ ${userId} -> connected`);
         socket.on('message', (message) => {
-            const socketColor = colorFromSeed(socket.userId);
+            const socketColor = colorFromSeed(userId);
             try {
                 const { type, ...data } = JSON.parse(message);
                 if (type === 'subscribe') {
                     if (DEBUG) colorLog(socketColor, `📝 ${userId} -> subscribe -> ${data.channel}`);
-                    subscribe(socket, data.channel);
+                    subscribe(userId, data.channel);
                     if (data.channel.startsWith('room:')) {
                         const roomId = data.channel.split(':')[1];
                         let game = games[data.channel]
@@ -68,21 +70,21 @@ export const initRooms = (wss) => {
                             games[data.channel] = game
                         }
                         // Add the player to the game
-                        if (game && game.addPlayer) game.addPlayer(socket.userId, socket.userName);
+                        if (game && game.addPlayer) game.addPlayer(userId, socket.userName);
                         // Remove the user from any other room channels
                         Object.keys(subscribers).forEach(channel => {
                             if (channel === data.channel) {
                                 return;
                             }
-                            if (channel.startsWith('room:') && subscribers[channel].some(subscriber => subscriber.userId === socket.userId)) {
-                                unsubscribe(socket, channel);
+                            if (channel.startsWith('room:') && subscribers[channel].some(subscriber => subscriber === userId)) {
+                                unsubscribe(userId, channel);
                             }
                         });
                         publish('rooms', getChannelData('rooms'));
                     }
                 } else if (type === 'unsubscribe') {
                     if (DEBUG) colorLog(socketColor, `🚪 ${userId} -> unsubscribe -> ${data.channel}`);
-                    unsubscribe(socket, data.channel);
+                    unsubscribe(userId, data.channel);
                 }
                 else if (type === 'action') {
                     if (DEBUG) colorLog(socketColor, `📨 ${userId} -> action -> ${data.channel}: ${JSON.stringify(data.data)}`);
@@ -107,42 +109,50 @@ export const initRooms = (wss) => {
                 if (DEBUG) colorLog('red', `❌ ${userId} -> error parsing message: ${error.message}`);
             }
         });
-        // Subscribe them to their user channel
-        subscribe(socket, `user:${userId}`);
-        subscribe(socket, 'rooms');
         Object.keys(subscribers).forEach(channel => {
-            if (subscribers[channel].some(subscriber => subscriber.userId === socket.userId)) {
-                socket.send(JSON.stringify({
-                    channel,
-                    data: getChannelData(channel)
-                }));
+            if (subscribers[channel].some(subscriber => subscriber === userId)) {
+                if (DEBUG) colorLog('green', `🚶‍➡️ ${userId} -> subscribing to ${channel}`);
+                subscribe(userId, channel);
+            }
+        });
+        subscribe(userId, 'rooms');
+        subscribe(userId, `user:${userId}`);
+        // subscribe to rooms that the user is already in
+        Object.keys(games).forEach(gameKey => {
+            const game = games[gameKey];
+            if (game && game.players?.some(player => player.id === userId)) {
+                subscribe(userId, `room:${game.id}`);
+            }
+        });
+        Object.keys(subscribers).forEach(channel => {
+            if (subscribers[channel].some(subscriber => subscriber === userId)) {
+                subscribe(userId, channel);
             }
         });
     });
 };
 
-const subscribe = (socket, channel) => {
+const subscribe = (userId, channel) => {
     if (!subscribers[channel]) {
         subscribers[channel] = [];
     }
     // if it doesn't already subscribe, subscribe
-    if (!subscribers[channel].some(subscriber => subscriber.userId === socket.userId)) {
-        subscribers[channel].push(socket);
+    if (!subscribers[channel].some(subscriber => subscriber === userId)) {
+        subscribers[channel].push(userId);
     }
-    if (!getChannelData(channel)) {
-        channels[channel] = {};
-    }
-    socket.send(JSON.stringify({
+    sockets[userId]?.send(JSON.stringify({
         channel,
         data: getChannelData(channel)
     }));
+    if (DEBUG) colorLog('green', `🚶‍➡️ ${userId} -> subscribed to ${channel}`);
 }
 
-const unsubscribe = (socket, channel) => {
+const unsubscribe = (userId, channel) => {
     if (!subscribers[channel]) {
         return;
     }
-    subscribers[channel] = subscribers[channel].filter(subscriber => subscriber.userId !== socket.userId);
+    subscribers[channel] = subscribers[channel].filter(subscriber => subscriber !== userId);
+    if (DEBUG) colorLog('green', `🚶‍➡️ ${userId} -> unsubscribed from ${channel}`);
 }
 
 const getChannelData = (channel: string) => {
@@ -160,8 +170,9 @@ const publish = (channel, data) => {
         if (DEBUG) colorLog('yellow', `❌ publish -> ${channel} not found`);
         return;
     }
-    subscribers[channel].forEach(socket => {
-        socket.send(JSON.stringify({
+    channels[channel] = data;
+    subscribers[channel].forEach(userId => {
+        sockets[userId]?.send(JSON.stringify({
             channel,
             data
         }));
@@ -169,7 +180,5 @@ const publish = (channel, data) => {
 }
 
 props.eventEmitter.on('publish', (channel, data) => {
-    if (DEBUG) colorLog('blue', `📢 publish -> ${channel}: ${JSON.stringify(data)}`);
-    channels[channel] = data;
     publish(channel, data);
 });

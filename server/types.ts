@@ -1,5 +1,6 @@
 export interface Room {
     id?: string;
+    players?: PlayerType[];
     messages?: string[];
     state?: string;
     name?: string;

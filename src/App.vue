@@ -20,7 +20,7 @@ onUnmounted(() => {
     <span>Connection Status: {{ websocketStore.connectionStatus }}</span><br/>
   </div>
   <div class="container mx-auto">
-    <h1>Games for Blind Gamers 5</h1>
+    <h1>Potion Chicken</h1>
     <div class="flex flex-col gap-4 items-stretch bg-gray-800 rounded-xl shadow-lg p-6">
       <Lobby />
       <Room />
@@ -29,6 +29,7 @@ onUnmounted(() => {
     </div>
     <pre class="text-xs text-left">[room]{{ JSON.stringify(websocketStore.roomBlob, null, 2) }}</pre>
     <pre class="text-xs text-left">[user]{{ JSON.stringify(websocketStore.userBlob, null, 2) }}</pre>
+    <pre class="text-xs text-left">[rooms]{{ JSON.stringify(websocketStore.rooms, null, 2) }}</pre>
   </div>
 </template>
 

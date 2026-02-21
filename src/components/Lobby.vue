@@ -15,8 +15,19 @@ const createRoom = () => {
 
 <template>
     <div v-if="isEmpty(websocketStore.roomBlob)">
-        <h1>Lobby</h1>
+        <div class="flex flex-col items-center w-full gap-3 border p-4 rounded-md">
+          <h2 class="text-2xl font-bold">How to Play</h2>
+          <ul class="list-disc list-inside text-left">
+            <li>A cauldron starts with 2 random herbs in it. Take turns adding herbs to the pot.</li>
+            <li>Each herb works as an antidote to one other herb.</li>
+            <li>You may challenge the previous player to drink the potion.</li>
+            <li>If you have enough antidote in your hand, you win the challenge and the challenger loses a heart.</li>
+            <li>Otherwise, you lose a heart.</li>
+            <li>The last person with a heart wins.</li>
+          </ul>
+        </div>
         <div class="flex flex-col items-center w-full gap-3">
+          <h2 class="text-2xl font-bold">Rooms</h2>
           <div
             v-for="room in websocketStore.rooms"
             :key="room.id"

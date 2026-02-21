@@ -31,6 +31,8 @@ export const useWebsocketStore = defineStore('websocketStore', () => {
           rooms.value = data
         }
         if (channel.startsWith('user:')) {
+          const userId = channel.split(':')[1]
+          localStorage.setItem('user_id', userId)
           userBlob.value = data
         }
         if (channel.startsWith('room:')) {
