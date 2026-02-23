@@ -16,5 +16,5 @@ export type ChannelsList = Record<string, Room | undefined>;
 export type PlayerType = {
     id: string;
     name: string;
-    hp: number;
+    score: number;
 }

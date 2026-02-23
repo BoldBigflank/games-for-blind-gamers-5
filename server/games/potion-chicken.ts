@@ -9,7 +9,7 @@ type Card = {
 }
 
 const HAND_SIZE = 6;
-const POT_START_SIZE = 2
+const POT_START_SIZE = 0
 
 const cardStack: Card[] = [
     { name: "Aloe", suit: 'a', value: 1 },
@@ -47,6 +47,7 @@ class Player implements PlayerType {
     state: string;
     hand: Card[];
     hp: number;
+    score: number;
 
     constructor(playerId: string, playerName: string) {
         this.id = playerId
@@ -55,6 +56,7 @@ class Player implements PlayerType {
         this.state = 'wait';
         this.hand = [];
         this.hp = 3;
+        this.score = 0;
     }
     addCardToHand(card: Card) {
         this.hand.push(card);

@@ -14,7 +14,7 @@ const messages = computed(() => websocketStore.roomMessages || [])
             <div v-for="message in messages.slice(-5)" 
             :key="message" 
             tabindex="0"
-            class="rounded-md shadow-md p-2 bg-white text-black">
+            class="rounded-md shadow-md p-0 bg-white text-black">
                 <span>{{ message }}</span>
             </div>
         </div>
