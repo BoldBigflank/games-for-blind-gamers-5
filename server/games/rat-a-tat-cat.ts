@@ -273,9 +273,9 @@ export class RatATatCat implements Room {
                 } else if (this.state === 'playing') {
                     if (player.chosenCard) { // Has a card chosen
                         blob.state = 'choose';
-                        blob.prompt = 'Place a card in the discard pile';
+                        blob.prompt = 'Choose a card to discard.';
                         blob.choices = [
-                            { value: 'chosenCard', label: `${player.chosenCard.value} from discard` },
+                            { value: 'chosenCard', class: `card ${player.chosenCard.name}`, label: `Drawn ${player.chosenCard.value}` },
                             ...player.hand.map((c, i) => ({
                                 class: `card ${c.name}`,
                                 value: `hand:${i}`,

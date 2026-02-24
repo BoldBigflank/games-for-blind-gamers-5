@@ -43,14 +43,8 @@ const changeName = () => {
             <div class="text-lg font-bold text-gray-900 dark:text-white text-center">{{ websocketStore.userBlob.prompt
             }}</div>
             <div class="
-                    grid
-                    gap-4 
-                    justify-center
-                    grid-cols-1
-                    sm:grid-cols-2
-                    md:grid-cols-3
-                    lg:grid-cols-4
-                    xl:grid-cols-5
+                    flex flex-wrap gap-4 items-center justify-center
+                    w-full
                 ">
                 <button v-for="choice in websocketStore.userBlob.choices" :key="choice.value" :aria-label="choice.label"
                     role="button" tabindex="0" :class="`${choice.class} choice`" @click="choose(choice.value)" class="cursor-pointer transition-all bg-blue-500 text-white px-6 py-2 rounded-lg

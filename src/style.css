@@ -92,7 +92,15 @@ button:hover {
 }
 
 .choice {
-  @apply w-48 aspect-[3/4] bg-white dark:bg-gray-900 rounded-lg shadow-md flex items-center justify-center cursor-pointer hover:-translate-y-2 hover:ring-4 ring-blue-400 transition-transform transition-shadow duration-200;
+  /* a regular button */
+  @apply bg-white dark:bg-gray-900 rounded-lg shadow-md flex items-center justify-center cursor-pointer hover:-translate-y-2 hover:ring-4 ring-blue-400 transition-transform transition-shadow duration-200;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 2px solid #008000;
+  border-radius: 8px;
 }
 
 .card {
