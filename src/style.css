@@ -98,6 +98,23 @@ button:hover {
 .card {
   @apply aspect-[3/4] rounded-lg flex items-center justify-center shadow-md inline-block font-bold;
   box-shadow: 0 4px 12px var(--shadow-color);
+  border: 6px solid #008000;
+  border-radius: 8px;
+  margin: 4px;
+  position: relative;
+}
+
+.card .label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
 }
 
 .Aloe {
@@ -138,6 +155,7 @@ button:hover {
   background-color: #f00;
 }
 
+/* 
 .pile {
   @apply w-10 h-14 rounded-md;
 }
@@ -148,4 +166,4 @@ button:hover {
 
 .pile-visible {
   @apply bg-gray-800 rounded-md;
-}
+} */

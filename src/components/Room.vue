@@ -30,15 +30,16 @@ const websocketStore = useWebsocketStore()
                     </div>
                     <!-- If a pile is hidden, show an empty card -->
                     <!-- If it's shown, represent as the top card -->
-                    <div v-if="item.type === 'pile' && item.cards.length > 0" class="pile"
-                        :class="{ 'pile-hidden': item.attributes.includes('hidden'), 'pile-visible': item.attributes.includes('visible') }">
-                        <div v-if="item.attributes.includes('hidden')">
-                            <div class="card Aloe"></div>
+                    <div v-if="item.type === 'pile' && item.cards.length > 0" class="pile card" :aria-label="item.name"
+                        :class="{
+                            'pile-hidden': item.attributes.includes('hidden'),
+                            'pile-visible': item.attributes.includes('visible')
+                        }">
+                        <div v-if="item.attributes.includes('hidden')" class="label">
+                            ???
                         </div>
-                        <div v-else>
-                            <div class="card" :class="item.cards[0].name">
-                                <span class="font-bold">{{ item.cards[0].value }}</span>
-                            </div>
+                        <div v-else class="label">
+                            {{ item.cards[0].value }}
                         </div>
                     </div>
                 </div>

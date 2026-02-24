@@ -59,6 +59,7 @@ class Player implements PlayerType {
     hand: Card[];
     chosenCard: Card | null;
     score: number;
+    hidden: boolean;
 
     constructor(playerId: string, playerName: string) {
         this.id = playerId
@@ -68,6 +69,7 @@ class Player implements PlayerType {
         this.hand = [];
         this.chosenCard = null;
         this.score = 0;
+        this.hidden = false;
     }
     addCardToHand(card: Card) {
         this.hand.push(card);
@@ -253,7 +255,13 @@ export class RatATatCat implements Room {
         const playerIndex = this.players.indexOf(player);
         if (player) {
             player.state = 'wait';
-            if (this.turn === playerIndex) {
+            if (!player.hidden && this.state === 'playing') { // If the player hasn't hidden their cards
+                blob.state = 'choose';
+                blob.prompt = "Memorize your cards"
+                blob.choices = [
+                    { value: 'hide', label: 'Hide your hand' }
+                ];
+            } else if (this.turn === playerIndex) {
                 if (this.state === 'waiting') {
                     blob.state = 'choose'
                     blob.prompt = 'Waiting for more players to join';
@@ -263,8 +271,7 @@ export class RatATatCat implements Room {
                         blob.choices.push({ value: 'start', label: 'Start the game' });
                     }
                 } else if (this.state === 'playing') {
-                    // Has a card chosen
-                    if (player.chosenCard) {
+                    if (player.chosenCard) { // Has a card chosen
                         blob.state = 'choose';
                         blob.prompt = 'Place a card in the discard pile';
                         blob.choices = [
@@ -294,8 +301,8 @@ export class RatATatCat implements Room {
                 blob.state = 'wait';
             }
             blob.hand = player.hand.map((c, i) => {
-                let value = (i == 1 || i == 2) && this.turn > 0 ? '???' : c.value;
-                let ariaValue = (i == 1 || i == 2) && this.turn > 0 ? 'Hidden Value' : c.value;
+                let value = (i == 1 || i == 2) && player.hidden ? '???' : c.value;
+                let ariaValue = (i == 1 || i == 2) && player.hidden ? 'Hidden Value' : c.value;
                 return {
                     value,
                     name: c.name,
@@ -333,6 +340,9 @@ export class RatATatCat implements Room {
             case 'challenge':
                 this.messages.push(`${player.name} called to end the round`);
                 this.lastTurn = (this.turn - 1 + this.players.length) % this.players.length;
+                break;
+            case 'hide':
+                player.hidden = true;
                 break;
             case 'draw':
                 player.chosenCard = this.deck.shift() as Card;
@@ -380,6 +390,7 @@ export class RatATatCat implements Room {
         this.discard.push(this.deck.shift() as Card);
         // Deal cards to each player
         this.players.forEach(player => {
+            player.hidden = false;
             while (player.hand.length < HAND_SIZE) {
                 this.drawCard(player);
             }
