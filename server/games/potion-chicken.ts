@@ -166,6 +166,46 @@ export class PotionChicken implements Room {
 
     calculateRoomBlob(): Record<string, any> {
         return {
+            layout: [
+                [
+                    {
+                        type: 'text',
+                        text: this.name,
+                    },
+                    {
+                        type: 'text',
+                        text: `${this.playerCount}/${this.maxPlayers} Players`,
+                    },
+                ],
+                [
+                    {
+                        type: 'text',
+                    },
+                ],
+                [
+                    ...this.players.map((p, index) => {
+                        const attributes: string[] = [];
+                        if (this.turn === index) {
+                            attributes.push('turn');
+                        }
+                        return {
+                            type: 'player',
+                            id: p.id,
+                            name: p.name,
+                            hp: p.hp,
+                            attributes
+                        }
+                    }),
+                ],
+                [
+                    {
+                        type: 'pile',
+                        name: 'Pot',
+                        cards: this.pot,
+                        attributes: ['hidden'],
+                    },
+                ],
+            ],
             name: this.name,
             state: this.state,
             id: this.id,

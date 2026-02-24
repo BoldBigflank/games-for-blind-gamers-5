@@ -133,3 +133,19 @@ button:hover {
   /* outlined border */
   border: 2px solid #fff;
 }
+
+.player-lastTurn {
+  background-color: #f00;
+}
+
+.pile {
+  @apply w-10 h-14 rounded-md;
+}
+
+.pile-hidden {
+  @apply bg-gray-800 rounded-md;
+}
+
+.pile-visible {
+  @apply bg-gray-800 rounded-md;
+}

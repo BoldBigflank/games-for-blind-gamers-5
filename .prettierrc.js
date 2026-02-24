@@ -9,6 +9,7 @@ const config = {
   tabWidth: 2,
   trailingComma: 'es5',
   useTabs: false,
+  singleAttributePerLine: true,
 }
 
 export default config
