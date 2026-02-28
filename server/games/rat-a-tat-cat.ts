@@ -142,12 +142,34 @@ export class RatATatCat implements Room {
 
     endRound() {
         // Sum the players' hands and add it to the score
+        this.players.forEach(player => {
+            player.score += this.sumCards(player.hand);
+            this.messages.push(`${player.name} scored ${player.score} points (${player.hand.map(c => c.value).join(', ')}) and now has${player.score} points`);
+            // Move all the cards to the discard pile
+            this.discard.push(...player.hand);
+            player.hand = [];
+        })
         // Increment the round
-        // Move all the cards to the discard pile
+        this.round++;
         // Shuffle the discard pile
+        this.discard = shuffle(this.discard);
         // Move the discard pile to the bottom of the deck
+        this.deck.unshift(...this.discard);
+        this.discard = [];
         // Deal cards to each player
-
+        this.players.forEach(player => {
+            while (player.hand.length < HAND_SIZE) {
+                this.drawCard(player);
+            }
+            player.hidden = false;
+        });
+        this.setState('waiting');
+        this.lastTurn = null;
+        if (this.round >= MAX_ROUNDS) {
+            const winner = this.players.sort((a, b) => b.score - a.score)[0];
+            this.setState('ended');
+            this.messages.push(`The game has ended! The winner is ${winner.name } with ${winner.score} points`);
+        }
     }
 
     sumCards(cards: Card[]): number {
@@ -268,7 +290,7 @@ export class RatATatCat implements Room {
                     blob.choices = [];
                     if (this.players.length > 1) {
                         blob.prompt = 'When everyone is ready, start the game';
-                        blob.choices.push({ value: 'start', label: 'Start the game' });
+                        blob.choices.push({ value: 'start', label: 'Start the round' });
                     }
                 } else if (this.state === 'playing') {
                     if (player.chosenCard) { // Has a card chosen
@@ -356,7 +378,7 @@ export class RatATatCat implements Room {
                 if (!player.chosenCard) {
                     return;
                 }
-                this.discard.push(player.chosenCard);
+                this.discard.unshift(player.chosenCard);
                 this.messages.push(`${player.name} discarded ${player.chosenCard.value}.`);
                 player.chosenCard = null;
                 // If it's the last turn, end the round
@@ -370,12 +392,12 @@ export class RatATatCat implements Room {
                 // Put the chosen card in the position of the discarded card
                 const card = player.removeCardFromHand(parseInt(choiceValue));
                 player.hand.splice(parseInt(choiceValue), 0, player.chosenCard as Card);
-                this.discard.push(card);
+                this.discard.unshift(card);
                 player.chosenCard = null;
                 this.messages.push(`${player.name} discarded ${card.value}.`);
                 // If it's the last turn, end the round
                 if (this.lastTurn === this.turn) {
-                    this.setState('challenging');
+                    this.endRound(); 
                 }
                 this.turn = (this.turn + 1) % this.players.length;
                 break;
@@ -387,7 +409,7 @@ export class RatATatCat implements Room {
         // Shuffle the deck
         this.deck = shuffle([...cardStack]);
         // Add one card to the discard pile
-        this.discard.push(this.deck.shift() as Card);
+        this.discard.unshift(this.deck.shift() as Card);
         // Deal cards to each player
         this.players.forEach(player => {
             player.hidden = false;

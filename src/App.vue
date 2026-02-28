@@ -20,11 +20,11 @@ onUnmounted(() => {
     <span>Connection Status: {{ websocketStore.connectionStatus }}</span><br/>
   </div>
   <div class="container mx-auto">
-    <h1>Potion Chicken</h1>
+    <h1>Memory Gather</h1>
     <div class="flex flex-col gap-4 items-stretch bg-gray-800 rounded-xl shadow-lg p-6">
       <Lobby />
-      <Room />
       <Messages />
+      <Room />
       <User />
     </div>
     <pre class="text-xs text-left">[room]{{ JSON.stringify(websocketStore.roomBlob, null, 2) }}</pre>

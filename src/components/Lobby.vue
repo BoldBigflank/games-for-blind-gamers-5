@@ -18,13 +18,21 @@ const createRoom = () => {
         <div class="flex flex-col items-center w-full gap-3 border p-4 rounded-md">
           <h2 class="text-2xl font-bold">How to Play</h2>
           <ul class="list-disc list-inside text-left">
+            <li>Given four cards, remember their values, because two will be hidden before play begins.</li>
+            <li>On your turn, choose either from the top of the discard pile or draw from the deck.</li>
+            <li>Once chosen, choose one position do discard, replacing with the chosen card.</li>
+            <li>You may choose to end the round, and after everyone else gets one more turn, the round ends.</li>
+            <li>At the end of the round, the value of your cards is added to your score.</li>
+            <li>After all rounds are played, the player with the highest score wins.</li>
+          </ul>
+          <!-- <ul class="list-disc list-inside text-left">
             <li>A cauldron starts with 2 random herbs in it. Take turns adding herbs to the pot.</li>
             <li>Each herb works as an antidote to one other herb.</li>
             <li>You may challenge the previous player to drink the potion.</li>
             <li>If you have enough antidote in your hand, you win the challenge and the challenger loses a heart.</li>
             <li>Otherwise, you lose a heart.</li>
             <li>The last person with a heart wins.</li>
-          </ul>
+          </ul> -->
         </div>
         <div class="flex flex-col items-center w-full gap-3">
           <h2 class="text-2xl font-bold">Rooms</h2>
