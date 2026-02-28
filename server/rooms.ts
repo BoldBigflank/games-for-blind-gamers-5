@@ -14,20 +14,9 @@ const props = {
     eventEmitter: new EventEmitter()
 }
 // The list of users in each channel
-const subscribers: Record<string, string[]> = {
+const subscribers: Record<string, string[]> = {}
 
-}
-
-const testRoom = new RatATatCat(props.eventEmitter, {
-    id: '1',
-    name: generateRoomName(),
-    playerCount: 0,
-    maxPlayers: 2
-})
-
-const channels: ChannelsList = {
-    "room:1": testRoom
-}
+const channels: ChannelsList = { }
 
 const games: Record<string, Room> = {}
 
@@ -66,7 +55,7 @@ export const initRooms = (wss) => {
                                 id: roomId,
                                 name: generateRoomName(),
                                 playerCount: 0,
-                                maxPlayers: 2
+                                maxPlayers: 4
                             })
                             games[data.channel] = game
                         }

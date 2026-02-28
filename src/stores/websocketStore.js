@@ -2,6 +2,9 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useWebSocket } from '@vueuse/core'
 
+const WS_URL = import.meta.env.VITE_WS_URL || 'wss://games-for-blind-gamers-5.onrender.com:443'
+// const WS_URL = 'ws://localhost:3000'
+
 export const useWebsocketStore = defineStore('websocketStore', () => {
   const connectionStatus = ref('disconnected')
   const rooms = ref([])
@@ -9,7 +12,7 @@ export const useWebsocketStore = defineStore('websocketStore', () => {
   const userBlob = ref({})
   const roomBlob = ref({})
   const { status, data, send, open, close, ws } = useWebSocket(
-    `ws://localhost:3000?userId=${localStorage.getItem('user_id')}&userName=${localStorage.getItem('user_name')}`,
+    `${WS_URL}?userId=${localStorage.getItem('user_id')}&userName=${localStorage.getItem('user_name')}`,
     {
       autoReconnect: true,
       onConnected: (ws) => {
