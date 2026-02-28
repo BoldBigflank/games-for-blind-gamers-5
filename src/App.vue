@@ -26,10 +26,7 @@ onUnmounted(() => {
       <Messages />
       <Room />
       <User />
-    </div>
-    <pre class="text-xs text-left">[room]{{ JSON.stringify(websocketStore.roomBlob, null, 2) }}</pre>
-    <pre class="text-xs text-left">[user]{{ JSON.stringify(websocketStore.userBlob, null, 2) }}</pre>
-    <pre class="text-xs text-left">[rooms]{{ JSON.stringify(websocketStore.rooms, null, 2) }}</pre>
+    </div> 
   </div>
 </template>
 
