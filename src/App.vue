@@ -20,7 +20,7 @@ onUnmounted(() => {
     <span>Connection Status: {{ websocketStore.connectionStatus }}</span><br/>
   </div>
   <div class="container mx-auto">
-    <h1>Memory Gather</h1>
+    <h1>Hidden Hand</h1>
     <div class="flex flex-col gap-4 items-stretch bg-gray-800 rounded-xl shadow-lg p-6">
       <Lobby />
       <Messages />
