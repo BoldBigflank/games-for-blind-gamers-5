@@ -69,11 +69,11 @@ jobs:
           name: production-files
           path: ./dist
 
-      - name: Butler Upload
-        uses: manleydev/butler-publish-itchio-action@master
-        env:
-          BUTLER_CREDENTIALS: ${{ secrets.BUTLER_API_KEY }}
-          CHANNEL: web
-          ITCH_GAME: ${{ secrets.ITCH_GAME }}
-          ITCH_USER: ${{ secrets.ITCH_USER }}
-          PACKAGE: ./dist
+      - name: Publish to Itch.io
+        uses: KikimoraGames/itch-publish@v0.0.3
+        with:
+          butlerApiKey: ${{ secrets.BUTLER_API_KEY }}
+          gameData: ./dist
+          itchUsername: ${{ secrets.ITCH_USER }}
+          itchGameId: ${{ secrets.ITCH_GAME }}
+          buildChannel: web
