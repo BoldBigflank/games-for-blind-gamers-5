@@ -111,7 +111,7 @@ export class HiddenHand implements Room {
     constructor(eventEmitter: EventEmitter, { name, id, playerCount, maxPlayers = 2 }) {
         this.eventEmitter = eventEmitter;
         this.name = name;
-        this.gameName = 'hidden-hand';
+        this.gameName = 'Hidden Hand';
         this.id = id;
         this.playerCount = playerCount;
         this.maxPlayers = maxPlayers;
@@ -152,7 +152,7 @@ export class HiddenHand implements Room {
         // Sum the players' hands and add it to the score
         this.players.forEach(player => {
             player.score += this.sumCards(player.hand);
-            this.messages.push(`${player.name} scored ${player.score} points (${player.hand.map(c => c.value).join(', ')}) and now has${player.score} points`);
+            this.messages.push(`${player.name} scored ${player.score} points (${player.hand.map(c => c.value).join(', ')}) and now has ${player.score} points`);
             // Move all the cards to the discard pile
             this.discard.push(...player.hand);
             player.hand = [];

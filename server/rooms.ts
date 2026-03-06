@@ -1,6 +1,5 @@
 import { randomUUID } from 'crypto';
 import * as url from 'url';
-import { PotionChicken } from './games/potion-chicken';
 import { HiddenHand } from './games/hidden-hand';
 import { WebSocketServer, WebSocket } from 'ws';
 import { colorLog, colorFromSeed, blobLog, generateRoomName } from './utils';

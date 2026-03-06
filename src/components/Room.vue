@@ -4,34 +4,10 @@ import { isEmpty } from '@/utils'
 import { ref } from 'vue'
 
 const websocketStore = useWebsocketStore()
-const collapsed = ref(true)
-const toggleCollapse = () => {
-    collapsed.value = !collapsed.value
-}
 </script>
 
 <template>
     <div class="relative" v-if="!isEmpty(websocketStore.roomBlob)">
-        <!-- tailwind collapsible panel -->
-        <div v-if="websocketStore.roomBlob.gameName === 'hidden-hand'" class="absolute top-0 left-0 text-left">
-            <button @click="toggleCollapse"
-                class="rounded-md bg-slate-800 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-                type="button">
-                {{ collapsed ? 'Instructions' : 'Hide Instructions' }}
-            </button>
-            <div v-show="!collapsed"
-                class="border border-slate-200 rounded-md p-4 mt-2 w-full basis-full overflow-hidden transition-all duration-300 ease-in-out bg-black">
-                <ul class="list-disc list-inside text-left">
-                    <li>Given four cards, remember their values, because two will be hidden before play begins.</li>
-                    <li>On your turn, choose either from the top of the discard pile or draw from the deck.</li>
-                    <li>Once chosen, choose one position do discard, replacing with the chosen card.</li>
-                    <li>You may choose to end the round, and after everyone else gets one more turn, the round ends.
-                    </li>
-                    <li>At the end of the round, the value of your cards is added to your score.</li>
-                    <li>After all rounds are played, the player with the highest score wins.</li>
-                </ul>
-            </div>
-        </div>
         <!-- roomBlob.layout will be a 2d array of objects -->
         <!-- The first array will be rows aligned vertically, and inner objects aligned horizontally-->
         <div class="flex flex-col items-center justify-center gap-2">
