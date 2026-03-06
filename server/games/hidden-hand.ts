@@ -136,9 +136,15 @@ export class HiddenHand implements Room {
         this.publishBlobs();
     }
 
-    removePlayer(player) {
-        this.players = this.players.filter(p => p !== player);
+    removePlayer(playerId) {
+        const player = this.players.find(p => p.id === playerId);
+        if (!player) {
+            return;
+        }
+        this.players = this.players.filter(p => p.id !== playerId);
+        this.playerCount = this.players.length;
         this.messages.push(`${player.name} left the game`);
+        this.eventEmitter.emit('publish', `user:${playerId}`, {});
         this.publishBlobs();
     }
 

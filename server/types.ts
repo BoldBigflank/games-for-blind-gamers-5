@@ -8,6 +8,7 @@ export interface Room {
     playerCount?: number;
     maxPlayers?: number;
     addPlayer?: (playerId: string, playerName: string) => void;
+    removePlayer?: (playerId: string) => void;
     action?: (data: any) => void;
     toString?: () => string;
 };

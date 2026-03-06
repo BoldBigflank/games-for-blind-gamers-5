@@ -2,8 +2,8 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useWebSocket } from '@vueuse/core'
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'wss://games-for-blind-gamers-5.onrender.com:443'
-// const WS_URL = 'ws://localhost:3000'
+// const WS_URL = import.meta.env.VITE_WS_URL || 'wss://games-for-blind-gamers-5.onrender.com:443'
+const WS_URL = 'ws://localhost:3000'
 
 export const useWebsocketStore = defineStore('websocketStore', () => {
   const connectionStatus = ref('disconnected')
@@ -31,7 +31,7 @@ export const useWebsocketStore = defineStore('websocketStore', () => {
         console.log('[WebsocketStore] Message received:', event.data)
         const { channel, data } = JSON.parse(event.data)
         if (channel === 'rooms') {
-          rooms.value = data
+          rooms.value = data.filter((room) => room.playerCount > 0 && room.state === 'waiting')
         }
         if (channel.startsWith('user:')) {
           const userId = channel.split(':')[1]
@@ -56,6 +56,14 @@ export const useWebsocketStore = defineStore('websocketStore', () => {
   }
   const unsubscribe = (channel) => {
     send(JSON.stringify({ type: 'unsubscribe', channel }))
+    // Remove locally
+    if (channel.startsWith('room:')) {
+      roomBlob.value = {}
+      roomMessages.value = []
+    }
+    if (channel.startsWith('user:')) {
+      userBlob.value = {}
+    }
   }
   return {
     connectionStatus,

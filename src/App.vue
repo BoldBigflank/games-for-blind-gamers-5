@@ -12,6 +12,10 @@ onUnmounted(() => {
   websocketStore.close()
 })
 
+const leaveRoom = () => {
+  websocketStore.unsubscribe(`room:${websocketStore.roomBlob.id}`)
+  websocketStore.roomBlob = {}
+}
 </script>
 
 <template>
@@ -20,7 +24,13 @@ onUnmounted(() => {
     <span>Connection Status: {{ websocketStore.connectionStatus }}</span><br />
   </div>
   <div class="container mx-auto">
-    <h1 v-if="websocketStore.roomBlob.gameName">{{ websocketStore.roomBlob.gameName }}</h1>
+    <h1 v-if="websocketStore.roomBlob.gameName">
+      {{ websocketStore.roomBlob.gameName }}
+      <button @click="leaveRoom"
+        class="rounded-md bg-slate-800 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none cursor-pointer active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed">
+        Leave Room
+      </button>
+    </h1>
     <h1 v-else>Game Lobby</h1>
     <div class="flex flex-col gap-4 items-stretch bg-gray-800 rounded-xl shadow-lg p-6">
       <Lobby />

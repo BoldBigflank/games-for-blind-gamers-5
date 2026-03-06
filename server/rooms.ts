@@ -75,6 +75,11 @@ export const initRooms = (wss) => {
                 } else if (type === 'unsubscribe') {
                     if (DEBUG) colorLog(socketColor, `🚪 ${userId} -> unsubscribe -> ${data.channel}`);
                     unsubscribe(userId, data.channel);
+                    if (data.channel.startsWith('room:')) {
+                        let game = games[data.channel]
+                        if (game && game.removePlayer) game.removePlayer(userId);
+                    }
+                    publish('rooms', getChannelData('rooms'));
                 }
                 else if (type === 'action') {
                     if (DEBUG) colorLog(socketColor, `📨 ${userId} -> action -> ${data.channel}: ${JSON.stringify(data.data)}`);
@@ -138,6 +143,7 @@ const subscribe = (userId, channel) => {
 }
 
 const unsubscribe = (userId, channel) => {
+    // subscribers, channels, games, sockets
     if (!subscribers[channel]) {
         return;
     }
