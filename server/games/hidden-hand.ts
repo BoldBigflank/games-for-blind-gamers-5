@@ -366,6 +366,7 @@ export class HiddenHand implements Room {
             case 'start':
                 this.setState('playing');
                 this.messages.push(`The game has started!`);
+                this.maxPlayers = this.players.length;
                 this.startGame();
                 break;
             case 'challenge':
