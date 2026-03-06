@@ -17,16 +17,17 @@ onUnmounted(() => {
 <template>
   <!-- Top right corner shows connection status -->
   <div class="absolute top-0 left-0">
-    <span>Connection Status: {{ websocketStore.connectionStatus }}</span><br/>
+    <span>Connection Status: {{ websocketStore.connectionStatus }}</span><br />
   </div>
   <div class="container mx-auto">
-    <h1>Hidden Hand</h1>
+    <h1 v-if="websocketStore.roomBlob.gameName">{{ websocketStore.roomBlob.gameName }}</h1>
+    <h1 v-else>Game Lobby</h1>
     <div class="flex flex-col gap-4 items-stretch bg-gray-800 rounded-xl shadow-lg p-6">
       <Lobby />
       <Messages />
       <Room />
       <User />
-    </div> 
+    </div>
   </div>
 </template>
 

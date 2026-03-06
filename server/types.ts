@@ -4,6 +4,7 @@ export interface Room {
     messages?: string[];
     state?: string;
     name?: string;
+    gameName?: string;
     playerCount?: number;
     maxPlayers?: number;
     addPlayer?: (playerId: string, playerName: string) => void;

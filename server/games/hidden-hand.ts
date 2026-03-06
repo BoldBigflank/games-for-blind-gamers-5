@@ -91,9 +91,10 @@ class Player implements PlayerType {
 }
 
 // Create a class for the game
-export class RatATatCat implements Room {
+export class HiddenHand implements Room {
     eventEmitter: EventEmitter;
     name: string;
+    gameName: string;
     id: string;
     playerCount: number;
     maxPlayers: number;
@@ -110,6 +111,7 @@ export class RatATatCat implements Room {
     constructor(eventEmitter: EventEmitter, { name, id, playerCount, maxPlayers = 2 }) {
         this.eventEmitter = eventEmitter;
         this.name = name;
+        this.gameName = 'hidden-hand';
         this.id = id;
         this.playerCount = playerCount;
         this.maxPlayers = maxPlayers;
@@ -168,7 +170,7 @@ export class RatATatCat implements Room {
         if (this.round >= MAX_ROUNDS) {
             const winner = this.players.sort((a, b) => b.score - a.score)[0];
             this.setState('ended');
-            this.messages.push(`The game has ended! The winner is ${winner.name } with ${winner.score} points`);
+            this.messages.push(`The game has ended! The winner is ${winner.name} with ${winner.score} points`);
         }
     }
 
@@ -244,6 +246,7 @@ export class RatATatCat implements Room {
                 ],
             ],
             name: this.name,
+            gameName: this.gameName,
             state: this.state,
             id: this.id,
             playerCount: this.playerCount,
@@ -397,7 +400,7 @@ export class RatATatCat implements Room {
                 this.messages.push(`${player.name} discarded ${card.value}.`);
                 // If it's the last turn, end the round
                 if (this.lastTurn === this.turn) {
-                    this.endRound(); 
+                    this.endRound();
                 }
                 this.turn = (this.turn + 1) % this.players.length;
                 break;

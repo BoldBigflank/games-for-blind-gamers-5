@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import * as url from 'url';
 import { PotionChicken } from './games/potion-chicken';
-import { RatATatCat } from './games/rat-a-tat-cat';
+import { HiddenHand } from './games/hidden-hand';
 import { WebSocketServer, WebSocket } from 'ws';
 import { colorLog, colorFromSeed, blobLog, generateRoomName } from './utils';
 import { Room, ChannelsList } from './types';
@@ -16,7 +16,7 @@ const props = {
 // The list of users in each channel
 const subscribers: Record<string, string[]> = {}
 
-const channels: ChannelsList = { }
+const channels: ChannelsList = {}
 
 const games: Record<string, Room> = {}
 
@@ -51,7 +51,7 @@ export const initRooms = (wss) => {
                         const roomId = data.channel.split(':')[1];
                         let game = games[data.channel]
                         if (!game || !game.id) {
-                            game = new RatATatCat(props.eventEmitter, {
+                            game = new HiddenHand(props.eventEmitter, {
                                 id: roomId,
                                 name: generateRoomName(),
                                 playerCount: 0,
