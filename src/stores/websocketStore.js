@@ -2,8 +2,8 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useWebSocket } from '@vueuse/core'
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'wss://games-for-blind-gamers-5.onrender.com:443'
-// const WS_URL = 'ws://localhost:3000'
+const WS_URL =
+  window.location.hostname === 'localhost' ? 'ws://localhost:3000' : 'wss://games-for-blind-gamers-5.onrender.com:443'
 
 export const useWebsocketStore = defineStore('websocketStore', () => {
   const connectionStatus = ref('disconnected')
