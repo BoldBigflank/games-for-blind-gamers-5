@@ -311,7 +311,7 @@ export class HiddenHand implements Room {
                                 class: `card ${c.name}`,
                                 value: `hand:${i}`,
                                 label: `${i == 1 || i == 2 ? '???' : c.value}`,
-                                ariaLabel: `${i == 1 || i == 2 ? 'Card' : c.value} in position ${i + 1}`,
+                                ariaLabel: `${i == 1 || i == 2 ? `Hidden Card` : c.value} in position ${i + 1}`,
                             })),
                         ]
                     } else {
@@ -320,8 +320,16 @@ export class HiddenHand implements Room {
                         if (this.lastTurn !== null) blob.prompt += ` (this is your last turn)`;
                         // Draw from the deck or the discard pile
                         blob.choices = [
-                            { value: 'draw', label: 'Draw from the deck' },
-                            { value: 'discard', label: `Draw ${this.discard[0].value} from the discard pile` },
+                            {
+                                value: 'draw',
+                                label: 'Draw from the deck',
+                                ariaLabel: 'Draw from the deck'
+                            },
+                            {
+                                value: 'discard',
+                                label: `Draw ${this.discard[0].value} from the discard pile`,
+                                ariaLabel: `Draw ${this.discard[0].value} from the discard pile`
+                            },
                         ]
                     }
                     if (this.lastTurn === null) {

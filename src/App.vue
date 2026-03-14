@@ -36,7 +36,7 @@ const connectionEmoji = computed(() => {
 </script>
 
 <template>
-  <div class="sticky top-0 left-0 bg-gray-400 p-4 w-full flex justify-between items-center">
+  <div class="sticky top-0 left-0 bg-gray-400 p-4 w-full flex justify-between items-center" aria-role="header">
     <div class="flex flex-row gap-2">
       <span class="text-left w-1 h-12 flex items-center justify-center"
         :aria-label="`Connection Status: ${websocketStore.connectionStatus}`">{{
@@ -77,8 +77,11 @@ const connectionEmoji = computed(() => {
   <div v-show="!collapsed"
     class="absolute top-0 left-0 z-10 border border-slate-200 rounded-md p-4 mt-2 w-full basis-full overflow-hidden transition-all duration-300 ease-in-out bg-black">
     <ul class="list-disc list-inside text-left">
-      <li>Given four cards, remember their values, because two will be hidden before play begins.</li>
-      <li>On your turn, choose either from the top of the discard pile or draw from the deck.</li>
+      <li>The goal of the game is to get the highest score.</li>
+      <li>Each round, you are given four cards with values up to 9.</li>
+      <li>Remember their values, because two will be hidden before play begins.</li>
+      <li>On your turn, choose a card to replace with a card in your hand, either from the top of the discard pile or
+        draw from the deck.</li>
       <li>Once chosen, choose one position do discard, replacing with the chosen card.</li>
       <li>You may choose to end the round, and after everyone else gets one more turn, the round ends.
       </li>
